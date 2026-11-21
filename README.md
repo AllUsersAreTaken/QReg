@@ -355,3 +355,27 @@ Where a win is still plausible: low inlier fraction, repetitive texture, multi-m
 motion, and genuinely multi-frame constraints (jointly consistent correspondences across
 t-1, t, t+1). Where it is not: >25% inliers on a planar homography, or consecutive drone
 frames.
+## Findings
+
+Six findings, written up in [`docs/FINDINGS.md`](docs/FINDINGS.md), including the
+ones that argue against the idea:
+
+- **The decoder beats the selector.** Adding a Tukey IRLS refit over *all*
+  candidates (same 3 px threshold RANSAC gets) takes 20%-inlier, 35-degree pairs
+  from 40-450 px to 1-2 px. Most of what looked like a selection problem was a
+  fitting problem.
+- **The annealer is not contributing.** At a matched spin-flip budget, SQA beats
+  SA in 9/24 pairs and gets 1/8 the sweeps, so at coin-flip quality it is a strict
+  compute loss. Greedy is within noise of both.
+- **Learning the energy does work.** The energy-to-quality rank correlation goes
+  from **-0.65 to +0.83**, and per-tile selection reaches the ground-truth-inlier
+  oracle (1.70 vs 1.70) and beats per-tile RANSAC in 4 of 5 seeds.
+- **Real orthomosaic data cannot answer the registration question**, because the
+  front-end finds no true correspondences across a season of appearance change.
+  The QUBO result on real data is **untested, not negative**.
+- **Three bugs that were manufacturing results**, including border reflection
+  creating a phantom 180-degree consensus that made RANSAC look like it failed at
+  41% inliers.
+
+The honest summary: the quantum-inspired solver was the part that did not work,
+and per-tile selection plus a robust decoder was the part that did.
